@@ -1,5 +1,6 @@
 const asyncHandler=require("express-async-handler");
 const jwt=require("jsonwebtoken");
+require('dotenv').config();
 const validationToken= asyncHandler(async(req,res,next)=>
 {
 
@@ -12,9 +13,9 @@ if(authHeader && authHeader.split(" ")[1])
 {
     console.log("1");
     token=authHeader.split(" ")[1];
-    
-    console.log(process.env.ACCESS_TOKEN_SCREEN);
-    jwt.verify(token,"sushith",(err,decoded)=>
+    console.log(process.env.PORT);
+    console.log(process.env.ACCESS_TOKEN_SECERT);
+    jwt.verify(token,process.env.ACCESS_TOKEN_SECERT,(err,decoded)=>
     {
         console.log(decoded);
        

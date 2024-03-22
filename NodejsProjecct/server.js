@@ -4,6 +4,7 @@ const dotenv=require("dotenv").config();
 const connectDb=require("./Config/dbConnection");
 const app= express();
 connectDb();
+console.log(process.env.PORT);
 const port=process.env.PORT||5000;
 app.use(express.json());
 app.use("/api/contacts",require("./routes/contactRoutes"));
