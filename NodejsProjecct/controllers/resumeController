@@ -1,0 +1,77 @@
+const Resume=require('../models/resumeModel')
+
+
+const asyncHandler=require("express-async-handler");
+const getResumes=asyncHandler(async (req,res)=>{
+    const resumes= await Resume.findById(req.params.id);
+   
+    res.status(200).json(resumes);
+});
+
+const createResume=asyncHandler(async (req,res)=>{
+    console.log(req.body);
+    const {content}=req.body;
+   const createdBy=req.user.id;
+
+   console.log('aaa')
+   console.log(createdBy)
+
+   if(!content)
+    {
+     res.status(400);
+     throw new Error("content is mandatory");
+    }
+    const resume= await Resume.create({content,createdBy:createdBy});
+
+    res.status(201).json(resume);
+});
+
+const selectResume=asyncHandler(async (req,res)=>{
+    const resume= await Resume.findById(req.params.id);
+    if(!resume)
+    {
+        res.status(404); throw new Error("Not Found Id");
+    }
+
+    res.status(200).json(resume);
+});
+
+const updateResume=asyncHandler(async (req,res)=>{const resume= await Resume.findById(req.params.id);
+    
+    const {content}=req.body;
+    const updatedBy=req.user.id;
+    console.log("ssss"+updatedBy);
+    if(!resume)
+    {
+        res.status(404); throw new Error("Not Found Id");
+    }
+    
+    //const updatedResume= await Resume.findByIdAndUpdate(req.params.id,{req.body,updatedBy},{new:true})  ;
+
+    const updatedResume= await Resume.findByIdAndUpdate(req.params.id,
+        {
+            $set: {
+              content: content, // Assuming content is coming from req.body
+              updatedBy: updatedBy
+            }
+        },
+        {new:true}
+        ) ;
+
+    res.status(200).json(updatedResume);
+});
+
+const deleteResume=asyncHandler(async (req,res)=>{
+    const resume= await Resume.findById(req.params.id);
+    if(!resume)
+    {
+        res.status(404); throw new Error("Not Found Id");
+    }
+    await Resume.deleteOne();
+    res.status(200).json(resume);
+});
+
+
+
+
+module.exports={getResumes,createResume,selectResume,updateResume,deleteResume};

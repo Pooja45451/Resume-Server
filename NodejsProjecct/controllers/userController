@@ -2,41 +2,41 @@ const User=require('../models/userModel')
 const jwt=require('jsonwebtoken')
 const bcrypt=require("bcrypt");
 const asyncHandler=require("express-async-handler");
-const { eventNames } = require('../models/contactModel');
+const dotenv=require("dotenv").config();
+
 
 const userRegister=asyncHandler(async (req,res)=>
 {
-    
-
-    const {userName,email,password}=req.body;
-    if(!userName||!email)
+    console.log("1");
+    const {firstName,lastName,email,password,phone,roleid}=req.body;
+    if(!firstName||!lastName||!email||!password||!phone||!roleid)
      {
       res.status(400);
       throw new Error("All field are mandatory");
      }
+     console.log(email);
     const userAvailable = await User.findOne({email});
     if(userAvailable)
      {
       res.status(400);
+      console.log("ssssss333");
       throw new Error("User already register");
      }
+     console.log("3");
     const hashPassword=await bcrypt.hash(password,10);
     console.log(hashPassword);
 
-    const user= await User.create({userName,email,hashPassword});
-
+    const user= await User.create({firstName,lastName,email,password:hashPassword,phone,roleid});
+ 
     if(user)
     {
-    res.status(201).json({_id:user._id,email:user.email});
-
+        res.status(201).json({_id:user._id,email:user.email});
     }
     else
     {
         res.status(400);
         throw new Error("")
     }
-
-    
     res.json({message:"Register the user"})
 
 
@@ -58,18 +58,23 @@ const userLogin=asyncHandler(async (req,res)=>
     throw new Error("All fields are mandatory")
    }
    const user=await User.findOne({email});
+   
+   console.log(process.env.ACCESS_TOKEN_SCREEN);
+
    if(user && bcrypt.compare(password,user.password))
    {
     const accessToken=jwt.sign(
         {
            users:{
-            userName:user.userName,
+            firstName:user.firstName,
+            lastName:user.lastName,
+            roleid:user.roleid,
             email:user.email,
             id:user.id,
 
            },
 
-        },process.env.ACCESS_TOKEN_SECERT,{expiresIn:"1m"});
+        },"sushith",{expiresIn:"15m"});
         res.status(200).json(accessToken);
     }
     else 
@@ -82,7 +87,7 @@ const userLogin=asyncHandler(async (req,res)=>
 
 
 const currentUser=asyncHandler(async (req,res)=>
-{res.json({message:"Current user"})}
+{res.json(req.user)}
 );
 
 module.exports={userRegister,userLogin,currentUser};
