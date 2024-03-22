@@ -1,0 +1,93 @@
+const User=require('../models/userModel')
+const jwt=require('jsonwebtoken')
+const bcrypt=require("bcrypt");
+const asyncHandler=require("express-async-handler");
+const dotenv=require("dotenv").config();
+
+
+const userRegister=asyncHandler(async (req,res)=>
+{
+    console.log("1");
+    const {firstName,lastName,email,password,phone,roleid}=req.body;
+    if(!firstName||!lastName||!email||!password||!phone||!roleid)
+     {
+      res.status(400);
+      throw new Error("All field are mandatory");
+     }
+     console.log(email);
+    const userAvailable = await User.findOne({email});
+    if(userAvailable)
+     {
+      res.status(400);
+      console.log("ssssss333");
+      throw new Error("User already register");
+     }
+     console.log("3");
+    const hashPassword=await bcrypt.hash(password,10);
+    console.log(hashPassword);
+
+    const user= await User.create({firstName,lastName,email,password:hashPassword,phone,roleid});
+ 
+    if(user)
+    {
+        res.status(201).json({_id:user._id,email:user.email});
+    }
+    else
+    {
+        res.status(400);
+        throw new Error("")
+    }
+    res.json({message:"Register the user"})
+
+
+
+}
+
+
+
+
+
+);
+
+const userLogin=asyncHandler(async (req,res)=>
+{
+   const {email,password} =req.body;
+   if(!email || !password)
+   {
+    res.status(400);
+    throw new Error("All fields are mandatory")
+   }
+   const user=await User.findOne({email});
+   
+   console.log(process.env.ACCESS_TOKEN_SCREEN);
+
+   if(user && bcrypt.compare(password,user.password))
+   {
+    const accessToken=jwt.sign(
+        {
+           users:{
+            firstName:user.firstName,
+            lastName:user.lastName,
+            roleid:user.roleid,
+            email:user.email,
+            id:user.id,
+
+           },
+
+        },"sushith",{expiresIn:"15m"});
+        res.status(200).json(accessToken);
+    }
+    else 
+    {
+        res.status(401);
+        throw new Error("Email or Password is not valid");
+    }
+}
+);
+
+
+const currentUser=asyncHandler(async (req,res)=>
+{res.json(req.user)}
+);
+
+module.exports={userRegister,userLogin,currentUser};
