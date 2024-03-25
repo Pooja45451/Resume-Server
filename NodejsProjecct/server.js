@@ -1,10 +1,14 @@
 const express=require("express");
 const errorHandler = require("./middleware/errorHandler");
 const dotenv=require("dotenv").config();
+
 const connectDb=require("./Config/dbConnection");
+const cors = require('cors');
 const app= express();
+// Use CORS middleware
+app.use(cors());
 connectDb();
-console.log(process.env.PORT);
+
 const port=process.env.PORT||5000;
 app.use(express.json());
 app.use("/api/contacts",require("./routes/contactRoutes"));
